@@ -40,7 +40,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-[150px]">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-red-500">
             Welcome to Avax Studio
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">

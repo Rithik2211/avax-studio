@@ -138,6 +138,16 @@ function BuilderFlow() {
     setEdgesState(reduxEdges)
   }, [reduxNodes, reduxEdges, setNodesState, setEdgesState])
 
+  // Keep selectedNode in sync with actual node data
+  useEffect(() => {
+    if (selectedNode) {
+      const actualNode = nodes.find(node => node.id === selectedNode.id)
+      if (actualNode && JSON.stringify(actualNode.data) !== JSON.stringify(selectedNode.data)) {
+        dispatch(setSelectedNode(actualNode))
+      }
+    }
+  }, [nodes, selectedNode, dispatch])
+
   const onConnect = useCallback(
     (params: Connection) => {
       const newEdges = addEdge(params, edges)
@@ -151,6 +161,23 @@ function BuilderFlow() {
     dispatch(setSelectedNode(node))
     setShowSidebar(true)
   }, [dispatch])
+
+  // Helper function to update node data
+  const updateNodeData = useCallback((nodeId: string, newData: any) => {
+    const updatedNodes = nodes.map(node =>
+      node.id === nodeId ? { ...node, data: { ...node.data, ...newData } } : node
+    )
+    setNodesState(updatedNodes)
+    dispatch(setNodes(updatedNodes))
+    
+    // Update selected node if it's the one being modified
+    if (selectedNode?.id === nodeId) {
+      const updatedSelectedNode = updatedNodes.find(node => node.id === nodeId)
+      if (updatedSelectedNode) {
+        dispatch(setSelectedNode(updatedSelectedNode))
+      }
+    }
+  }, [nodes, setNodesState, dispatch, selectedNode])
 
   const onNodeDragStop = useCallback((event: any, node: Node) => {
     const updatedNodes = nodes.map(n => 
@@ -239,9 +266,9 @@ function BuilderFlow() {
       {/* Navigation */}
       <Navbar currentPage="builder" />
 
-      <div className="flex h-[calc(100vh-4rem)] pt-16">
+      <div className="flex h-screen pt-16">
         {/* Toolbar */}
-        <div className="w-64 glass p-4 flex flex-col gap-4 overflow-y-auto">
+        <div className="w-64 glass p-4 flex flex-col gap-4 overflow-y-auto border-r border-white-1">
           <div>
             <h3 className="text-lg font-semibold mb-4">Components</h3>
             <div className="space-y-2">
@@ -353,7 +380,7 @@ function BuilderFlow() {
             className="bg-gradient-to-br from-slate-900 via-black to-slate-900"
             connectionLineStyle={{ stroke: '#6366f1', strokeWidth: 1 }}
             defaultEdgeOptions={{ 
-              type: 'smoothstep',
+              type: 'bezier curve',
               style: { stroke: '#6366f1', strokeWidth: 1 }
             }}
           >
@@ -412,15 +439,7 @@ function BuilderFlow() {
                   <select
                     value={selectedNode.data.vmType}
                     onChange={(e) => {
-                      const updatedNode = {
-                        ...selectedNode,
-                        data: { ...selectedNode.data, vmType: e.target.value }
-                      }
-                      const updatedNodes = nodes.map(node =>
-                        node.id === selectedNode.id ? updatedNode : node
-                      )
-                      setNodesState(updatedNodes)
-                      dispatch(setNodes(updatedNodes))
+                      updateNodeData(selectedNode.id, { vmType: e.target.value })
                       dispatch(updateConfig({ vmType: e.target.value }))
                     }}
                     className="w-full glass px-3 py-2 rounded-lg mt-1 border border-white/20 bg-white/10 text-white"
@@ -439,15 +458,7 @@ function BuilderFlow() {
                     type="number"
                     value={selectedNode.data.count}
                     onChange={(e) => {
-                      const updatedNode = {
-                        ...selectedNode,
-                        data: { ...selectedNode.data, count: parseInt(e.target.value) || 0 }
-                      }
-                      const updatedNodes = nodes.map(node =>
-                        node.id === selectedNode.id ? updatedNode : node
-                      )
-                      setNodesState(updatedNodes)
-                      dispatch(setNodes(updatedNodes))
+                      updateNodeData(selectedNode.id, { count: parseInt(e.target.value) || 0 })
                     }}
                     className="mt-1"
                     min="1"
@@ -464,15 +475,7 @@ function BuilderFlow() {
                       type="text"
                       value={selectedNode.data.supply}
                       onChange={(e) => {
-                        const updatedNode = {
-                          ...selectedNode,
-                          data: { ...selectedNode.data, supply: e.target.value }
-                        }
-                        const updatedNodes = nodes.map(node =>
-                          node.id === selectedNode.id ? updatedNode : node
-                        )
-                        setNodesState(updatedNodes)
-                        dispatch(setNodes(updatedNodes))
+                        updateNodeData(selectedNode.id, { supply: e.target.value })
                         dispatch(updateConfig({ 
                           tokenomics: { ...config.tokenomics, supply: e.target.value }
                         }))
@@ -487,15 +490,7 @@ function BuilderFlow() {
                       type="text"
                       value={selectedNode.data.gasPrice}
                       onChange={(e) => {
-                        const updatedNode = {
-                          ...selectedNode,
-                          data: { ...selectedNode.data, gasPrice: e.target.value }
-                        }
-                        const updatedNodes = nodes.map(node =>
-                          node.id === selectedNode.id ? updatedNode : node
-                        )
-                        setNodesState(updatedNodes)
-                        dispatch(setNodes(updatedNodes))
+                        updateNodeData(selectedNode.id, { gasPrice: e.target.value })
                         dispatch(updateConfig({ 
                           tokenomics: { ...config.tokenomics, gasPrice: e.target.value }
                         }))
@@ -514,15 +509,7 @@ function BuilderFlow() {
                       type="checkbox"
                       checked={selectedNode.data.enabled}
                       onChange={(e) => {
-                        const updatedNode = {
-                          ...selectedNode,
-                          data: { ...selectedNode.data, enabled: e.target.checked }
-                        }
-                        const updatedNodes = nodes.map(node =>
-                          node.id === selectedNode.id ? updatedNode : node
-                        )
-                        setNodesState(updatedNodes)
-                        dispatch(setNodes(updatedNodes))
+                        updateNodeData(selectedNode.id, { enabled: e.target.checked })
                         dispatch(updateConfig({ 
                           governance: { ...config.governance, enabled: e.target.checked }
                         }))

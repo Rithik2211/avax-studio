@@ -83,11 +83,11 @@ export default function TemplatesPage() {
       {/* Navigation */}
       <Navbar currentPage="templates" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-[120px]">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2 gradient-text">Template Library</h1>
+            <h1 className="text-4xl font-bold mb-2 text-red-500">Template Library</h1>
             <p className="text-gray-300">
               Browse and use pre-configured subnet templates from the community
             </p>
@@ -103,7 +103,7 @@ export default function TemplatesPage() {
             </Button>
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 border border-1"
             >
               <Plus className="w-4 h-4" />
               Create Template
@@ -112,7 +112,7 @@ export default function TemplatesPage() {
         </div>
 
         {/* Search and Filters */}
-        <div className="glass-card mb-8">
+        <div className="glass-card mb-8 bg-transparent border border-1">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -127,7 +127,7 @@ export default function TemplatesPage() {
               <select
                 value={filterVM}
                 onChange={(e) => setFilterVM(e.target.value)}
-                className="glass px-3 py-2 rounded-lg border border-white/20"
+                className="glass px-3 py-2 rounded-lg"
               >
                 <option value="all">All VM Types</option>
                 <option value="EVM">EVM</option>

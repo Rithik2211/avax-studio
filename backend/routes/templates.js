@@ -1,42 +1,28 @@
 const express = require('express');
-const { createClient } = require('@supabase/supabase-js');
-const { v4: uuidv4 } = require('uuid');
-
 const router = express.Router();
+const databaseService = require('../services/databaseService');
 
-// Initialize Supabase client (only if credentials are provided)
-let supabase = null;
-if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY && 
-    process.env.SUPABASE_URL !== 'your_supabase_url_here' && 
-    process.env.SUPABASE_ANON_KEY !== 'your_supabase_anon_key_here') {
-  supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-  );
-}
-
-// GET /templates - Get all public templates
+/**
+ * GET /templates - Get all public templates
+ */
 router.get('/', async (req, res) => {
   try {
-    if (!supabase) {
-      return res.json([]);
+    const { category, vmType, search } = req.query;
+    
+    let templates = [];
+    
+    if (search) {
+      // Search templates
+      templates = await databaseService.searchTemplates(search, category, vmType);
+    } else {
+      // Get templates by visibility
+      templates = await databaseService.getTemplates('public', category);
     }
-    
-    const { data: templates, error } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('is_public', true)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      // If table doesn't exist, return empty array
-      if (error.code === 'PGRST205') {
-        return res.json([]);
-      }
-      throw error;
-    }
-    
-    res.json(templates || []);
+
+    res.json({
+      success: true,
+      templates
+    });
   } catch (error) {
     console.error('Error fetching templates:', error);
     res.status(500).json({
@@ -46,30 +32,18 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /templates/user/:userId - Get user's templates
+/**
+ * GET /templates/user/:userId - Get user's templates
+ */
 router.get('/user/:userId', async (req, res) => {
   try {
-    if (!supabase) {
-      return res.json([]);
-    }
-    
     const { userId } = req.params;
-    
-    const { data: templates, error } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('author', userId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      // If table doesn't exist, return empty array
-      if (error.code === 'PGRST205') {
-        return res.json([]);
-      }
-      throw error;
-    }
-    
-    res.json(templates || []);
+    const templates = await databaseService.getUserTemplates(userId);
+
+    res.json({
+      success: true,
+      templates
+    });
   } catch (error) {
     console.error('Error fetching user templates:', error);
     res.status(500).json({
@@ -79,42 +53,25 @@ router.get('/user/:userId', async (req, res) => {
   }
 });
 
-// GET /templates/:id - Get specific template
+/**
+ * GET /templates/:id - Get specific template
+ */
 router.get('/:id', async (req, res) => {
   try {
-    if (!supabase) {
-      return res.status(404).json({
-        error: 'Database not configured',
-        message: 'Supabase is not configured'
-      });
-    }
-    
     const { id } = req.params;
-    
-    const { data: template, error } = await supabase
-      .from('templates')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) {
-      if (error.code === 'PGRST205') {
-        return res.status(404).json({
-          error: 'Template not found',
-          message: 'Database tables not set up'
-        });
-      }
-      throw error;
-    }
-    
+    const template = await databaseService.getTemplate(id);
+
     if (!template) {
       return res.status(404).json({
         error: 'Template not found',
         message: `Template with ID ${id} does not exist`
       });
     }
-    
-    res.json(template);
+
+    res.json({
+      success: true,
+      template
+    });
   } catch (error) {
     console.error('Error fetching template:', error);
     res.status(500).json({
@@ -124,88 +81,101 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /templates - Save new template
+/**
+ * POST /templates - Create new template
+ */
 router.post('/', async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      config,
-      author,
-      isPublic = false
-    } = req.body;
-    
-    // Validate required fields
-    if (!name || !config || !author) {
+    const { userId, name, description, category, visibility, config, vmType, tags } = req.body;
+
+    if (!userId || !name || !config) {
       return res.status(400).json({
         error: 'Missing required fields',
-        message: 'Name, config, and author are required'
+        message: 'userId, name, and config are required'
       });
     }
-    
-    const template = {
-      id: uuidv4(),
+
+    const template = await databaseService.createTemplate(userId, {
       name,
-      description: description || '',
+      description,
+      category,
+      visibility,
       config,
-      author,
-      is_public: isPublic,
-      downloads: 0,
-      rating: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    const { data, error } = await supabase
-      .from('templates')
-      .insert(template)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    
-    res.status(201).json(data);
+      vmType,
+      tags
+    });
+
+    // Log activity
+    try {
+      await databaseService.logActivity(userId, 'template_created', 
+        `Created template: ${name}`, 
+        { templateId: template.id, category, visibility }
+      );
+    } catch (logError) {
+      console.warn('Failed to log activity:', logError);
+    }
+
+    res.json({
+      success: true,
+      template
+    });
   } catch (error) {
-    console.error('Error saving template:', error);
+    console.error('Error creating template:', error);
     res.status(500).json({
-      error: 'Failed to save template',
+      error: 'Failed to create template',
       message: error.message
     });
   }
 });
 
-// PUT /templates/:id - Update template
+/**
+ * PUT /templates/:id - Update template
+ */
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const updates = req.body;
-    
-    // Remove fields that shouldn't be updated
-    delete updates.id;
-    delete updates.created_at;
-    delete updates.downloads;
-    delete updates.rating;
-    
-    // Add updated timestamp
-    updates.updated_at = new Date().toISOString();
-    
-    const { data, error } = await supabase
-      .from('templates')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
-    
-    if (!data) {
+    const { userId, updates } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: 'User ID required',
+        message: 'Please provide userId'
+      });
+    }
+
+    // Get the template to verify ownership
+    const template = await databaseService.getTemplate(id);
+    if (!template) {
       return res.status(404).json({
         error: 'Template not found',
         message: `Template with ID ${id} does not exist`
       });
     }
-    
-    res.json(data);
+
+    if (template.user_id !== userId) {
+      return res.status(403).json({
+        error: 'Access denied',
+        message: 'You can only update your own templates'
+      });
+    }
+
+    // Update template
+    const updatedTemplate = await databaseService.updateTemplate(id, updates);
+
+    // Log activity
+    try {
+      await databaseService.logActivity(userId, 'template_updated', 
+        `Updated template: ${template.name}`, 
+        { templateId: id, updates }
+      );
+    } catch (logError) {
+      console.warn('Failed to log activity:', logError);
+    }
+
+    res.json({
+      success: true,
+      template: updatedTemplate
+    });
   } catch (error) {
     console.error('Error updating template:', error);
     res.status(500).json({
@@ -215,19 +185,54 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /templates/:id - Delete template
+/**
+ * DELETE /templates/:id - Delete template
+ */
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const { error } = await supabase
-      .from('templates')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
-    
-    res.json({ message: 'Template deleted successfully' });
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: 'User ID required',
+        message: 'Please provide userId'
+      });
+    }
+
+    // Get the template to verify ownership
+    const template = await databaseService.getTemplate(id);
+    if (!template) {
+      return res.status(404).json({
+        error: 'Template not found',
+        message: `Template with ID ${id} does not exist`
+      });
+    }
+
+    if (template.user_id !== userId) {
+      return res.status(403).json({
+        error: 'Access denied',
+        message: 'You can only delete your own templates'
+      });
+    }
+
+    // Delete template
+    await databaseService.deleteTemplate(id);
+
+    // Log activity
+    try {
+      await databaseService.logActivity(userId, 'template_deleted', 
+        `Deleted template: ${template.name}`, 
+        { templateId: id }
+      );
+    } catch (logError) {
+      console.warn('Failed to log activity:', logError);
+    }
+
+    res.json({
+      success: true,
+      message: 'Template deleted successfully'
+    });
   } catch (error) {
     console.error('Error deleting template:', error);
     res.status(500).json({
@@ -237,129 +242,147 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST /templates/:id/download - Increment download count
-router.post('/:id/download', async (req, res) => {
+/**
+ * POST /templates/:id/use - Use a template
+ */
+router.post('/:id/use', async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const { data: template, error: fetchError } = await supabase
-      .from('templates')
-      .select('downloads')
-      .eq('id', id)
-      .single();
-    
-    if (fetchError) throw fetchError;
-    
+    const { userId, subnetConfigId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: 'User ID required',
+        message: 'Please provide userId'
+      });
+    }
+
+    // Get the template
+    const template = await databaseService.getTemplate(id);
     if (!template) {
       return res.status(404).json({
         error: 'Template not found',
         message: `Template with ID ${id} does not exist`
       });
     }
-    
-    const { error: updateError } = await supabase
-      .from('templates')
-      .update({ downloads: template.downloads + 1 })
-      .eq('id', id);
-    
-    if (updateError) throw updateError;
-    
-    res.json({ message: 'Download count updated' });
+
+    // Record template usage
+    await databaseService.updateTemplateUsage(id, userId, subnetConfigId);
+
+    // Log activity
+    try {
+      await databaseService.logActivity(userId, 'template_used', 
+        `Used template: ${template.name}`, 
+        { templateId: id, subnetConfigId }
+      );
+    } catch (logError) {
+      console.warn('Failed to log activity:', logError);
+    }
+
+    res.json({
+      success: true,
+      template: template.template_config,
+      message: 'Template loaded successfully'
+    });
   } catch (error) {
-    console.error('Error updating download count:', error);
+    console.error('Error using template:', error);
     res.status(500).json({
-      error: 'Failed to update download count',
+      error: 'Failed to use template',
       message: error.message
     });
   }
 });
 
-// POST /templates/:id/rate - Rate template
+/**
+ * POST /templates/:id/rate - Rate a template
+ */
 router.post('/:id/rate', async (req, res) => {
   try {
     const { id } = req.params;
-    const { rating } = req.body;
-    
-    if (!rating || rating < 1 || rating > 5) {
+    const { userId, rating } = req.body;
+
+    if (!userId || !rating) {
+      return res.status(400).json({
+        error: 'Missing required fields',
+        message: 'userId and rating are required'
+      });
+    }
+
+    if (rating < 1 || rating > 5) {
       return res.status(400).json({
         error: 'Invalid rating',
         message: 'Rating must be between 1 and 5'
       });
     }
-    
-    const { data: template, error: fetchError } = await supabase
-      .from('templates')
-      .select('rating, rating_count')
-      .eq('id', id)
-      .single();
-    
-    if (fetchError) throw fetchError;
-    
-    if (!template) {
-      return res.status(404).json({
-        error: 'Template not found',
-        message: `Template with ID ${id} does not exist`
-      });
+
+    // Update template usage with rating
+    await databaseService.updateTemplateRating(id, userId, rating);
+
+    // Log activity
+    try {
+      await databaseService.logActivity(userId, 'template_rated', 
+        `Rated template with ${rating} stars`, 
+        { templateId: id, rating }
+      );
+    } catch (logError) {
+      console.warn('Failed to log activity:', logError);
     }
-    
-    // Calculate new average rating
-    const currentTotal = template.rating * (template.rating_count || 0);
-    const newTotal = currentTotal + rating;
-    const newCount = (template.rating_count || 0) + 1;
-    const newAverage = newTotal / newCount;
-    
-    const { error: updateError } = await supabase
-      .from('templates')
-      .update({ 
-        rating: newAverage,
-        rating_count: newCount
-      })
-      .eq('id', id);
-    
-    if (updateError) throw updateError;
-    
-    res.json({ 
-      message: 'Rating updated',
-      newRating: newAverage,
-      totalRatings: newCount
+
+    res.json({
+      success: true,
+      message: 'Rating submitted successfully'
     });
   } catch (error) {
-    console.error('Error updating rating:', error);
+    console.error('Error rating template:', error);
     res.status(500).json({
-      error: 'Failed to update rating',
+      error: 'Failed to rate template',
       message: error.message
     });
   }
 });
 
-// GET /templates/search - Search templates
+/**
+ * GET /templates/stats - Get template statistics
+ */
+router.get('/stats', async (req, res) => {
+  try {
+    const stats = await databaseService.getTemplateStats();
+
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    console.error('Error fetching template stats:', error);
+    res.status(500).json({
+      error: 'Failed to fetch template statistics',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /templates/search - Search templates
+ */
 router.get('/search', async (req, res) => {
   try {
-    const { q, vmType, author } = req.query;
-    
-    let query = supabase
-      .from('templates')
-      .select('*')
-      .eq('is_public', true);
-    
-    if (q) {
-      query = query.or(`name.ilike.%${q}%,description.ilike.%${q}%`);
+    const { q, category, vmType } = req.query;
+
+    if (!q) {
+      return res.status(400).json({
+        error: 'Search query required',
+        message: 'Please provide a search query (q parameter)'
+      });
     }
-    
-    if (vmType) {
-      query = query.eq('config->>vmType', vmType);
-    }
-    
-    if (author) {
-      query = query.eq('author', author);
-    }
-    
-    const { data: templates, error } = await query
-      .order('created_at', { ascending: false });
-    
-    if (error) throw error;
-    
-    res.json(templates || []);
+
+    const templates = await databaseService.searchTemplates(q, category, vmType);
+
+    res.json({
+      success: true,
+      templates,
+      query: q,
+      filters: { category, vmType }
+    });
   } catch (error) {
     console.error('Error searching templates:', error);
     res.status(500).json({

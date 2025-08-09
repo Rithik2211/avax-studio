@@ -100,11 +100,11 @@ export default function MonitorPage() {
       {/* Navigation */}
       <Navbar currentPage="monitor" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-[120px]">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2 gradient-text">Subnet Monitoring</h1>
+            <h1 className="text-4xl font-bold mb-2 text-red-500">Subnet Monitoring</h1>
             <p className="text-gray-300">
               Real-time monitoring and analytics for your Avalanche subnets
             </p>
@@ -131,7 +131,7 @@ export default function MonitorPage() {
 
         {/* Subnet ID Input */}
         {!subnetId && (
-          <div className="glass-card mb-8">
+          <div className="glass-card mb-8 bg-transparent border border-1">
             <h3 className="text-lg font-semibold mb-4">Start Monitoring</h3>
             <div className="flex gap-4">
               <Input
@@ -142,7 +142,7 @@ export default function MonitorPage() {
               />
               <Button
                 onClick={handleStartMonitoring}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border border-1"
               >
                 <Wifi className="w-4 h-4" />
                 Start Monitoring

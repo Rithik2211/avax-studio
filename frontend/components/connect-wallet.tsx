@@ -44,12 +44,12 @@ export function ConnectWallet() {
   if (isConnected && address) {
     return (
       <div className="flex items-center gap-4">
-        <div className="glass px-4 py-2 rounded-lg">
+        <div className="glass px-4 py-1 rounded-lg border border-1">
           <span className="text-sm text-gray-300">{formatAddress(address)}</span>
         </div>
         <button
           onClick={handleDisconnect}
-          className="glass-button flex items-center gap-2 text-red-400 hover:text-red-300"
+          className="glass-button flex items-center gap-2 text-red-400 hover:text-red-300 border border-1"
         >
           <LogOut className="w-4 h-4" />
           Disconnect
@@ -61,7 +61,7 @@ export function ConnectWallet() {
   return (
     <button
       onClick={handleConnect}
-      className="glass-button flex items-center gap-2 animate-pulse-glow"
+      className="glass-button flex items-center gap-2 animate-pulse-glow border border-1 py-2"
     >
       <Wallet className="w-4 h-4" />
       Connect Wallet
