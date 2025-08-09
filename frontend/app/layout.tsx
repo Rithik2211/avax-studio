@@ -10,6 +10,11 @@ export const metadata: Metadata = {
   title: 'Avax Studio - No-Code Avalanche Subnet Builder',
   description: 'Create, deploy, and monitor Avalanche subnets visually without using CLI',
   keywords: ['avalanche', 'subnet', 'blockchain', 'no-code', 'defi', 'web3'],
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 }
 
 export default function RootLayout({

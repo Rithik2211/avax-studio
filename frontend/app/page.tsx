@@ -4,9 +4,11 @@ import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
+import { Navbar } from '@/components/navbar'
 import { ConnectWallet } from '@/components/connect-wallet'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -112,16 +114,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-900">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 glass">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold gradient-text">Avax Studio</h1>
-            </div>
-            <ConnectWallet />
-          </div>
-        </div>
-      </nav>
+      <Navbar currentPage="home" />
 
       {/* Hero Section */}
       <section ref={heroRef} className="pt-32 pb-20 px-4">

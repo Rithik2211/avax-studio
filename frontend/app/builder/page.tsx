@@ -29,7 +29,7 @@ import ReactFlow, {
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 import './builder.css'
-import { ConnectWallet } from '@/components/connect-wallet'
+import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -237,25 +237,9 @@ function BuilderFlow() {
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 via-black to-slate-900">
       {/* Navigation */}
-      <nav className="glass h-16 flex items-center justify-between px-4 lg:px-6">
-        <div className="flex items-center gap-4 lg:gap-8">
-          <Link href="/dashboard" className="text-xl lg:text-2xl font-bold gradient-text">
-            Avax Studio
-          </Link>
-          <div className="hidden md:flex items-center gap-4 lg:gap-6">
-            <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-            <span className="text-white">Builder</span>
-            <Link href="/templates" className="text-gray-300 hover:text-white transition-colors">
-              Templates
-            </Link>
-          </div>
-        </div>
-        <ConnectWallet />
-      </nav>
+      <Navbar currentPage="builder" />
 
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex h-[calc(100vh-4rem)] pt-16">
         {/* Toolbar */}
         <div className="w-64 glass p-4 flex flex-col gap-4 overflow-y-auto">
           <div>

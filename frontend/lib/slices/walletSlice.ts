@@ -2,6 +2,13 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { ethers } from 'ethers';
 import detectEthereumProvider from '@metamask/detect-provider';
 
+// Type for the Ethereum provider
+interface EthereumProvider {
+  request: (args: { method: string; params?: any[] }) => Promise<any>;
+  on: (eventName: string, handler: (...args: any[]) => void) => void;
+  removeListener: (eventName: string, handler: (...args: any[]) => void) => void;
+}
+
 export interface WalletState {
   isConnected: boolean;
   address: string | null;
@@ -28,7 +35,7 @@ export const connectWallet = createAsyncThunk(
   'wallet/connect',
   async (_, { rejectWithValue }) => {
     try {
-      const provider = await detectEthereumProvider();
+      const provider = await detectEthereumProvider() as EthereumProvider;
       
       if (!provider) {
         throw new Error('MetaMask not found! Please install MetaMask.');

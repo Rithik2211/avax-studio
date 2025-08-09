@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
-import { ConnectWallet } from '@/components/connect-wallet'
+import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
 import { 
   Settings, 
@@ -35,27 +35,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-900">
       {/* Navigation */}
-      <nav className="glass fixed top-0 w-full z-50 ">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-8">
-              <h1 className="text-2xl font-bold gradient-text">Avax Studio</h1>
-              <div className="hidden md:flex items-center gap-6">
-                <Link href="/dashboard" className="text-white hover:text-blue-400 transition-colors">
-                  Dashboard
-                </Link>
-                <Link href="/builder" className="text-gray-300 hover:text-white transition-colors">
-                  Builder
-                </Link>
-                <Link href="/templates" className="text-gray-300 hover:text-white transition-colors">
-                  Templates
-                </Link>
-              </div>
-            </div>
-            <ConnectWallet />
-          </div>
-        </div>
-      </nav>
+      <Navbar currentPage="dashboard" />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-[150px]">

@@ -8,7 +8,7 @@ import {
   fetchMetrics, 
   addLog 
 } from '@/lib/slices/monitoringSlice'
-import { ConnectWallet } from '@/components/connect-wallet'
+import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { 
@@ -98,28 +98,9 @@ export default function MonitorPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-900">
       {/* Navigation */}
-      <nav className="glass h-16 flex items-center justify-between px-6">
-        <div className="flex items-center gap-8">
-          <Link href="/dashboard" className="text-2xl font-bold gradient-text">
-            Avax Studio
-          </Link>
-          <div className="flex items-center gap-6">
-            <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-            <Link href="/builder" className="text-gray-300 hover:text-white transition-colors">
-              Builder
-            </Link>
-            <Link href="/templates" className="text-gray-300 hover:text-white transition-colors">
-              Templates
-            </Link>
-            <span className="text-white">Monitor</span>
-          </div>
-        </div>
-        <ConnectWallet />
-      </nav>
+      <Navbar currentPage="monitor" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-20">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
