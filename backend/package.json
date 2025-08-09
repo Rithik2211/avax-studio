@@ -1,7 +1,7 @@
 {
   "name": "subnet-studio-backend",
   "version": "1.0.0",
-  "description": "Backend API for Subnet Studio",
+  "description": "Backend API for Avax Studio",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",

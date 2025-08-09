@@ -39,7 +39,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-8">
-              <h1 className="text-2xl font-bold gradient-text">Subnet Studio</h1>
+              <h1 className="text-2xl font-bold gradient-text">Avax Studio</h1>
               <div className="hidden md:flex items-center gap-6">
                 <Link href="/dashboard" className="text-white hover:text-blue-400 transition-colors">
                   Dashboard
@@ -61,7 +61,7 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pt-[150px]">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold mb-6 gradient-text">
-            Welcome to Subnet Studio
+            Welcome to Avax Studio
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Your gateway to creating, deploying, and monitoring Avalanche subnets. 

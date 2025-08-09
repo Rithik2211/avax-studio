@@ -116,7 +116,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold gradient-text">Subnet Studio</h1>
+              <h1 className="text-2xl font-bold gradient-text">Avax Studio</h1>
             </div>
             <ConnectWallet />
           </div>
@@ -125,15 +125,15 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section ref={heroRef} className="pt-32 pb-20 px-4">
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="hero-title text-6xl md:text-8xl font-bold mb-8 gradient-text">
-            Build Avalanche Subnets
+      <div className="max-w-7xl mx-auto text-center">
+          <h1 className="hero-title text-6xl md:text-7xl font-bold mb-8 gradient-text">
+            Launch Avalanche Subnets
             <br />
-            <span className="text-white">Without Code</span>
+            <span className="text-white">In Minutes</span>
           </h1>
           <p className="hero-subtitle text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto">
-            Create, deploy, and monitor custom Avalanche subnets with our intuitive drag-and-drop interface. 
-            No CLI knowledge required.
+            Skip days of CLI commands and complex configurations. Deploy production-ready subnets 
+            with visual templates, one-click monitoring, and enterprise-grade reliability.
           </p>
           <div className="hero-cta">
             <ConnectWallet />

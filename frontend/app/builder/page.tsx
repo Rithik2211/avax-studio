@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/lib/store'
 import { 
@@ -23,7 +23,12 @@ import ReactFlow, {
   Background,
   MiniMap,
   NodeTypes,
+  Handle,
+  Position,
+  ReactFlowProvider,
 } from 'reactflow'
+import 'reactflow/dist/style.css'
+import './builder.css'
 import { ConnectWallet } from '@/components/connect-wallet'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -37,55 +42,69 @@ import {
   Save,
   Loader2,
   CheckCircle,
-  XCircle
+  XCircle,
+  X,
+  Plus
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 
-// Custom Node Types
-const VMNode = ({ data }: { data: any }) => (
-  <div className="glass-card p-4 min-w-[200px]">
-    <div className="flex items-center gap-2 mb-2">
-      <Settings className="w-4 h-4 text-blue-400" />
-      <span className="font-semibold">VM Type</span>
+// Custom Node Components with proper handles
+const VMNode = ({ data, selected }: { data: any; selected?: boolean }) => (
+  <div className={`glass-card p-2 min-w-[150px] min-h-[50px] transition-all duration-200 ${selected ? 'ring-2 ring-blue-400' : ''}`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3" />
+    <div className='flex flex-col items-start gap-1'>
+      <div className="flex items-center gap-2">
+        <Settings className="w-4 h-4 text-blue-400" />
+        <span className="font-semibold text-[9px]">VM Type</span>
+      </div>
+      <div className="text-[8px] text-gray-300">{data.vmType}</div>
     </div>
-    <div className="text-sm text-gray-300">{data.vmType}</div>
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
   </div>
 )
 
-const ValidatorsNode = ({ data }: { data: any }) => (
-  <div className="glass-card p-4 min-w-[200px]">
-    <div className="flex items-center gap-2 mb-2">
-      <Users className="w-4 h-4 text-green-400" />
-      <span className="font-semibold">Validators</span>
+const ValidatorsNode = ({ data, selected }: { data: any; selected?: boolean }) => (
+  <div className={`glass-card p-2 min-w-[150px] min-h-[50px] transition-all duration-200 ${selected ? 'ring-2 ring-green-400' : ''}`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3" />
+    <div className='flex flex-col items-start gap-1'>
+      <div className="flex items-center gap-2">
+        <Users className="w-4 h-4 text-green-400" />
+        <span className="font-semibold text-[9px]">Validators</span>
+      </div>
+      <div className="text-[8px] text-gray-300">{data.count} validators</div>
     </div>
-    <div className="text-sm text-gray-300">{data.count} validators</div>
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
   </div>
 )
 
-const TokenomicsNode = ({ data }: { data: any }) => (
-  <div className="glass-card p-4 min-w-[200px]">
-    <div className="flex items-center gap-2 mb-2">
+const TokenomicsNode = ({ data, selected }: { data: any; selected?: boolean }) => (
+  <div className={`glass-card p-2 min-w-[150px] min-h-[50px] transition-all duration-200 ${selected ? 'ring-2 ring-yellow-400' : ''}`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3" />
+    <div className='flex flex-col items-start gap-1'>
+      <div className="flex items-center gap-2">
       <Coins className="w-4 h-4 text-yellow-400" />
-      <span className="font-semibold">Tokenomics</span>
-    </div>
-    <div className="text-sm text-gray-300">
-      Supply: {data.supply}
+        <span className="font-semibold text-[9px]">Tokenomics</span>
+      </div>
+      <div className="text-[8px] text-gray-300">Supply: {data.supply}
       <br />
-      Gas: {data.gasPrice}
+      Gas: {data.gasPrice}</div>
     </div>
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
   </div>
 )
 
-const GovernanceNode = ({ data }: { data: any }) => (
-  <div className="glass-card p-4 min-w-[200px]">
-    <div className="flex items-center gap-2 mb-2">
-      <Shield className="w-4 h-4 text-purple-400" />
-      <span className="font-semibold">Governance</span>
+const GovernanceNode = ({ data, selected }: { data: any; selected?: boolean }) => (
+  <div className={`glass-card p-2 min-w-[150px] min-h-[50px] transition-all duration-200 ${selected ? 'ring-2 ring-purple-400' : ''}`}>
+    <Handle type="target" position={Position.Top} className="w-3 h-3" />
+    <div className='flex flex-col items-start gap-1'>
+      <div className="flex items-center gap-2">
+        <Shield className="w-4 h-4 text-purple-400" />
+        <span className="font-semibold text-[9px]">Governance</span>
+      </div>
+      <div className="text-[8px] text-gray-300">{data.enabled ? 'Enabled' : 'Disabled'}</div>
     </div>
-    <div className="text-sm text-gray-300">
-      {data.enabled ? 'Enabled' : 'Disabled'}
-    </div>
+    <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
   </div>
 )
 
@@ -96,7 +115,7 @@ const nodeTypes: NodeTypes = {
   governanceNode: GovernanceNode,
 }
 
-export default function BuilderPage() {
+function BuilderFlow() {
   const dispatch = useDispatch()
   const { 
     nodes: reduxNodes, 
@@ -111,6 +130,7 @@ export default function BuilderPage() {
   const [nodes, setNodesState, onNodesChange] = useNodesState(reduxNodes)
   const [edges, setEdgesState, onEdgesChange] = useEdgesState(reduxEdges)
   const [showSidebar, setShowSidebar] = useState(false)
+  const [reactFlowInstance, setReactFlowInstance] = useState<any>(null)
 
   // Sync with Redux
   useEffect(() => {
@@ -132,7 +152,21 @@ export default function BuilderPage() {
     setShowSidebar(true)
   }, [dispatch])
 
-  const addNodeToFlow = (type: string, position: { x: number; y: number }) => {
+  const onNodeDragStop = useCallback((event: any, node: Node) => {
+    const updatedNodes = nodes.map(n => 
+      n.id === node.id ? { ...n, position: node.position } : n
+    )
+    setNodesState(updatedNodes)
+    dispatch(setNodes(updatedNodes))
+  }, [nodes, setNodesState, dispatch])
+
+  const addNodeToFlow = (type: string) => {
+    const position = reactFlowInstance ? 
+      reactFlowInstance.screenToFlowPosition({
+        x: Math.random() * 400 + 100,
+        y: Math.random() * 400 + 100,
+      }) : { x: 100, y: 100 }
+
     const newNode: Node = {
       id: `${type}-${Date.now()}`,
       type: `${type}Node`,
@@ -161,6 +195,11 @@ export default function BuilderPage() {
   }
 
   const handleDeploy = async () => {
+    if (nodes.length === 0) {
+      toast.error('Please add at least one component to deploy')
+      return
+    }
+    
     try {
       await dispatch(deploySubnet(config) as any)
       if (deploymentStatus === 'success') {
@@ -172,19 +211,38 @@ export default function BuilderPage() {
   }
 
   const handleSaveTemplate = () => {
+    if (nodes.length === 0) {
+      toast.error('Please add components before saving template')
+      return
+    }
     // TODO: Implement template saving
     toast.success('Template saved!')
+  }
+
+  const handleDeleteNode = (nodeId: string) => {
+    const updatedNodes = nodes.filter(node => node.id !== nodeId)
+    const updatedEdges = edges.filter(edge => 
+      edge.source !== nodeId && edge.target !== nodeId
+    )
+    setNodesState(updatedNodes)
+    setEdgesState(updatedEdges)
+    dispatch(setNodes(updatedNodes))
+    dispatch(setEdges(updatedEdges))
+    if (selectedNode?.id === nodeId) {
+      setShowSidebar(false)
+      dispatch(setSelectedNode(null))
+    }
   }
 
   return (
     <div className="h-screen bg-gradient-to-br from-slate-900 via-black to-slate-900">
       {/* Navigation */}
-      <nav className="glass h-16 flex items-center justify-between px-6">
-        <div className="flex items-center gap-8">
-          <Link href="/dashboard" className="text-2xl font-bold gradient-text">
-            Subnet Studio
+      <nav className="glass h-16 flex items-center justify-between px-4 lg:px-6">
+        <div className="flex items-center gap-4 lg:gap-8">
+          <Link href="/dashboard" className="text-xl lg:text-2xl font-bold gradient-text">
+            Avax Studio
           </Link>
-          <div className="flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4 lg:gap-6">
             <Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">
               Dashboard
             </Link>
@@ -199,12 +257,12 @@ export default function BuilderPage() {
 
       <div className="flex h-[calc(100vh-4rem)]">
         {/* Toolbar */}
-        <div className="w-64 glass p-4 flex flex-col gap-4">
+        <div className="w-64 glass p-4 flex flex-col gap-4 overflow-y-auto">
           <div>
             <h3 className="text-lg font-semibold mb-4">Components</h3>
             <div className="space-y-2">
               <Button
-                onClick={() => addNodeToFlow('vm', { x: 100, y: 100 })}
+                onClick={() => addNodeToFlow('vm')}
                 className="w-full justify-start"
                 variant="outline"
               >
@@ -212,7 +270,7 @@ export default function BuilderPage() {
                 VM Type
               </Button>
               <Button
-                onClick={() => addNodeToFlow('validators', { x: 100, y: 200 })}
+                onClick={() => addNodeToFlow('validators')}
                 className="w-full justify-start"
                 variant="outline"
               >
@@ -220,7 +278,7 @@ export default function BuilderPage() {
                 Validators
               </Button>
               <Button
-                onClick={() => addNodeToFlow('tokenomics', { x: 100, y: 300 })}
+                onClick={() => addNodeToFlow('tokenomics')}
                 className="w-full justify-start"
                 variant="outline"
               >
@@ -228,7 +286,7 @@ export default function BuilderPage() {
                 Tokenomics
               </Button>
               <Button
-                onClick={() => addNodeToFlow('governance', { x: 100, y: 400 })}
+                onClick={() => addNodeToFlow('governance')}
                 className="w-full justify-start"
                 variant="outline"
               >
@@ -243,7 +301,7 @@ export default function BuilderPage() {
             <div className="space-y-2">
               <Button
                 onClick={handleDeploy}
-                disabled={isDeploying}
+                disabled={isDeploying || nodes.length === 0}
                 className="w-full"
               >
                 {isDeploying ? (
@@ -261,6 +319,7 @@ export default function BuilderPage() {
               <Button
                 onClick={handleSaveTemplate}
                 variant="outline"
+                disabled={nodes.length === 0}
                 className="w-full"
               >
                 <Save className="w-4 h-4 mr-2" />
@@ -285,10 +344,17 @@ export default function BuilderPage() {
               </div>
             </div>
           )}
+
+          {/* Node Count */}
+          <div className="border-t border-white/20 pt-4">
+            <div className="text-sm text-gray-400">
+              Nodes: {nodes.length} | Edges: {edges.length}
+            </div>
+          </div>
         </div>
 
         {/* Flow Canvas */}
-        <div className="flex-1">
+        <div className="flex-1 relative">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -296,27 +362,63 @@ export default function BuilderPage() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}
+            onNodeDragStop={onNodeDragStop}
+            onInit={setReactFlowInstance}
             nodeTypes={nodeTypes}
             fitView
+            className="bg-gradient-to-br from-slate-900 via-black to-slate-900"
+            connectionLineStyle={{ stroke: '#6366f1', strokeWidth: 1 }}
+            defaultEdgeOptions={{ 
+              type: 'smoothstep',
+              style: { stroke: '#6366f1', strokeWidth: 1 }
+            }}
           >
-            <Controls />
-            <Background />
-            <MiniMap />
+            <Controls className="glass" />
+            <Background 
+              gap={20} 
+              size={1} 
+              color="#374151"
+            />
+            <MiniMap 
+              className="glass"
+              nodeColor="#6366f1"
+              maskColor="rgba(0, 0, 0, 0.8)"
+            />
           </ReactFlow>
+
+          {/* Floating Action Button for Mobile */}
+          <div className="md:hidden absolute bottom-4 right-4">
+            <Button
+              onClick={() => setShowSidebar(!showSidebar)}
+              className="rounded-full w-12 h-12 p-0"
+            >
+              <Plus className="w-6 h-6" />
+            </Button>
+          </div>
         </div>
 
         {/* Configuration Sidebar */}
         {showSidebar && selectedNode && (
-          <div className="w-80 glass p-4">
+          <div className="w-80 glass p-4 overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Configure {selectedNode.type}</h3>
-              <Button
-                onClick={() => setShowSidebar(false)}
-                variant="ghost"
-                size="sm"
-              >
-                ×
-              </Button>
+              <h3 className="text-lg font-semibold">Configure {selectedNode.type?.replace('Node', '')}</h3>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => handleDeleteNode(selectedNode.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-400 hover:text-red-300"
+                >
+                  Delete
+                </Button>
+                <Button
+                  onClick={() => setShowSidebar(false)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -337,7 +439,7 @@ export default function BuilderPage() {
                       dispatch(setNodes(updatedNodes))
                       dispatch(updateConfig({ vmType: e.target.value }))
                     }}
-                    className="w-full glass px-3 py-2 rounded-lg mt-1"
+                    className="w-full glass px-3 py-2 rounded-lg mt-1 border border-white/20 bg-white/10 text-white"
                   >
                     <option value="EVM">EVM</option>
                     <option value="SpacesVM">SpacesVM</option>
@@ -355,7 +457,7 @@ export default function BuilderPage() {
                     onChange={(e) => {
                       const updatedNode = {
                         ...selectedNode,
-                        data: { ...selectedNode.data, count: parseInt(e.target.value) }
+                        data: { ...selectedNode.data, count: parseInt(e.target.value) || 0 }
                       }
                       const updatedNodes = nodes.map(node =>
                         node.id === selectedNode.id ? updatedNode : node
@@ -364,6 +466,8 @@ export default function BuilderPage() {
                       dispatch(setNodes(updatedNodes))
                     }}
                     className="mt-1"
+                    min="1"
+                    max="100"
                   />
                 </div>
               )}
@@ -390,6 +494,7 @@ export default function BuilderPage() {
                         }))
                       }}
                       className="mt-1"
+                      placeholder="1000000000"
                     />
                   </div>
                   <div>
@@ -412,6 +517,7 @@ export default function BuilderPage() {
                         }))
                       }}
                       className="mt-1"
+                      placeholder="25000000000"
                     />
                   </div>
                 </div>
@@ -437,6 +543,7 @@ export default function BuilderPage() {
                           governance: { ...config.governance, enabled: e.target.checked }
                         }))
                       }}
+                      className="rounded border-white/20 bg-white/10"
                     />
                     Enable Governance
                   </Label>
@@ -447,5 +554,13 @@ export default function BuilderPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function BuilderPage() {
+  return (
+    <ReactFlowProvider>
+      <BuilderFlow />
+    </ReactFlowProvider>
   )
 }

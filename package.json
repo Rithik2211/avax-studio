@@ -20,7 +20,7 @@
     "defi",
     "web3"
   ],
-  "author": "Subnet Studio Team",
+  "author": "Avax Studio Team",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"

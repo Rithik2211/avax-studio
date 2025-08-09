@@ -1,4 +1,4 @@
-# Subnet Studio - No-Code Avalanche Subnet Builder
+# Avax Studio - No-Code Avalanche Subnet Builder
 
 A comprehensive SaaS-style web application for creating, deploying, and monitoring Avalanche subnets visually without using CLI. Built with modern web technologies and featuring a beautiful glassmorphic dark theme.
 

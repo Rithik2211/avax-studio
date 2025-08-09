@@ -43,7 +43,7 @@ app.use('/health', healthRoutes);
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({
-    message: 'Subnet Studio API',
+    message: 'Avax Studio API',
     version: '1.0.0',
     status: 'running',
     endpoints: {
@@ -74,7 +74,7 @@ app.use('*', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Subnet Studio API running on port ${PORT}`);
+  console.log(`🚀 Avax Studio API running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
 });

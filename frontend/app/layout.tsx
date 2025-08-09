@@ -7,7 +7,7 @@ import { Toaster } from 'react-hot-toast'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Subnet Studio - No-Code Avalanche Subnet Builder',
+  title: 'Avax Studio - No-Code Avalanche Subnet Builder',
   description: 'Create, deploy, and monitor Avalanche subnets visually without using CLI',
   keywords: ['avalanche', 'subnet', 'blockchain', 'no-code', 'defi', 'web3'],
 }
