@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  avalanche-node:
+    image: avaplatform/avalanchego:latest
+    container_name: subnet-studio-avalanche
+    ports:
+      - "9650:9650"
+      - "9651:9651"
+    volumes:
+      - avalanche-data:/root/.avalanchego
+    environment:
+      - AVALANCHE_NETWORK_ID=5  # Fuji testnet
+    command: >
+      --network-id=5
+      --http-host=0.0.0.0
+      --http-port=9650
+      --staking-port=9651
+      --public-ip=127.0.0.1
+      --staking-tls-cert-file=/root/.avalanchego/staking.crt
+      --staking-tls-key-file=/root/.avalanchego/staking.key
+      --log-level=info
+    restart: unless-stopped
+
+volumes:
+  avalanche-data:
