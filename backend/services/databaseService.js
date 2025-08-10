@@ -94,6 +94,13 @@ class DatabaseService {
   async createSubnetConfig(userId, configData) {
     if (!this.supabase) throw new Error('Database not configured');
 
+    // Validate UUID format
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      console.warn('Invalid UUID format for createSubnetConfig:', userId);
+      throw new Error('Invalid user ID format');
+    }
+
     const { data, error } = await this.supabase
       .from('subnet_configs')
       .insert({
@@ -350,6 +357,13 @@ class DatabaseService {
 
   async getUserTemplates(userId) {
     if (!this.supabase) throw new Error('Database not configured');
+
+    // Validate UUID format - if invalid, return empty array
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(userId)) {
+      console.warn('Invalid UUID format for getUserTemplates:', userId);
+      return []; // Return empty array for non-UUID user IDs (like wallet addresses)
+    }
 
     const { data, error } = await this.supabase
       .from('subnet_templates')

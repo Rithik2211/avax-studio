@@ -1,10 +1,13 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const morgan = require('morgan');
-require('dotenv').config();
+const rateLimit = require('express-rate-limit');
+
+// Add avalanche CLI to PATH
+process.env.PATH = `${process.env.PATH}:/Users/${process.env.USER}/bin`;
 
 const app = express();
 const PORT = process.env.PORT || 3001;

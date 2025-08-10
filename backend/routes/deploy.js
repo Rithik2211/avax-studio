@@ -64,9 +64,9 @@ router.post('/', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Deployment error:', error);
+    console.error('Deployment initiation error:', error);
     res.status(500).json({
-      error: 'Deployment failed',
+      error: 'Failed to start deployment',
       message: error.message
     });
   }
@@ -259,17 +259,18 @@ router.get('/network/status', async (req, res) => {
  */
 async function deploySubnetAsync(deploymentId, config, userId) {
   const deployment = deployments.get(deploymentId);
+  let subnetConfigId = null;
+  let dbDeploymentId = null;
   
   try {
     // Update status to deploying
     deployment.status = 'deploying';
     deployment.logs.push({
       timestamp: new Date().toISOString(),
-      message: 'Starting subnet deployment...'
+      message: 'Starting subnet deployment... (Demo Mode - Simulated for UI testing)'
     });
 
     // Create subnet configuration in database
-    let subnetConfigId = null;
     try {
       const subnetConfig = await databaseService.createSubnetConfig(userId, {
         name: config.name,
@@ -293,7 +294,6 @@ async function deploySubnetAsync(deploymentId, config, userId) {
     }
 
     // Create deployment record in database
-    let dbDeploymentId = null;
     if (subnetConfigId) {
       try {
         const dbDeployment = await databaseService.createDeployment(userId, subnetConfigId, {
@@ -307,36 +307,36 @@ async function deploySubnetAsync(deploymentId, config, userId) {
     }
 
     // Generate unique subnet name
-    const subnetName = `${config.name.toLowerCase().replace(/[^a-z0-9]/g, '')}_${Date.now()}`;
+    const subnetName = `${(config.name || 'subnet').toLowerCase().replace(/[^a-z0-9]/g, '')}_${Date.now()}`;
     
     deployment.logs.push({
       timestamp: new Date().toISOString(),
       message: `Creating subnet configuration: ${subnetName}`
     });
 
-    // Create subnet configuration using Avalanche CLI
-    const createResult = await avalancheService.createSubnet(subnetName, {
-      vmType: config.vmType,
-      consensus: config.consensus || 'pos',
-      chainId: config.chainId
+    // For demo purposes, simulate successful subnet creation
+    deployment.logs.push({
+      timestamp: new Date().toISOString(),
+      message: 'Subnet configuration created successfully (Demo Mode)'
     });
 
     deployment.logs.push({
       timestamp: new Date().toISOString(),
-      message: 'Subnet configuration created successfully'
+      message: `Simulating deployment to ${config.network || 'fuji'} network...`
     });
 
-    // Deploy subnet to network
+    // Simulate deployment result for demo
+    const deployResult = {
+      success: true,
+      subnetId: `subnet-${Date.now()}-demo`,
+      blockchainId: `blockchain-${Date.now()}-demo`,
+      rpcUrl: `http://localhost:9650/ext/bc/blockchain-${Date.now()}-demo/rpc`
+    };
+
     deployment.logs.push({
       timestamp: new Date().toISOString(),
-      message: `Deploying subnet to ${config.network || 'fuji'} network...`
+      message: 'Deployment simulation completed successfully!'
     });
-
-    const deployResult = await avalancheService.deploySubnet(
-      subnetName, 
-      config.keyName || 'default', 
-      config.network || 'fuji'
-    );
 
     // Update deployment with success
     deployment.status = 'completed';

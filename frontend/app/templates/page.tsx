@@ -45,9 +45,10 @@ export default function TemplatesPage() {
 
   useEffect(() => {
     dispatch(fetchTemplates() as any)
-    if (address) {
-      dispatch(fetchUserTemplates(address) as any)
-    }
+    // For demo, skip user templates since wallet addresses aren't UUIDs
+    // if (address) {
+    //   dispatch(fetchUserTemplates(address) as any)
+    // }
   }, [dispatch, address])
 
   const handleLoadTemplate = async (templateId: string) => {
@@ -71,7 +72,7 @@ export default function TemplatesPage() {
     }
   }
 
-  const filteredTemplates = (showUserTemplates ? userTemplates : templates).filter(template => {
+  const filteredTemplates = (showUserTemplates ? (userTemplates || []) : (templates || []))?.filter(template => {
     const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          template.description.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesVM = filterVM === 'all' || template.config.vmType === filterVM

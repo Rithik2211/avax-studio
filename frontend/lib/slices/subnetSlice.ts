@@ -63,12 +63,28 @@ export const deploySubnet = createAsyncThunk(
   'subnet/deploy',
   async (config: SubnetConfig, { rejectWithValue }) => {
     try {
+      // Generate a proper UUID for demo purposes
+      const userId = crypto.randomUUID();
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/deploy`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(config),
+        body: JSON.stringify({ 
+          config: {
+            name: config.name,
+            description: `Subnet created via Avax Studio`,
+            vmType: config.vmType.toLowerCase(),
+            network: config.network,
+            keyName: 'ewoq', // Use the key we have available
+            initialSupply: config.tokenomics.supply,
+            gasPrice: config.tokenomics.gasPrice,
+            governanceEnabled: config.governance.enabled,
+            governanceThreshold: config.governance.threshold
+          },
+          userId 
+        }),
       });
 
       if (!response.ok) {

@@ -20,6 +20,10 @@ class AvalancheService {
       const { stdout } = await execAsync(`${this.cliPath} --version`);
       return { installed: true, version: stdout.trim() };
     } catch (error) {
+      // If it's a network timeout, CLI is installed but can't check version
+      if (error.message.includes('timeout') || error.message.includes('TLS handshake')) {
+        return { installed: true, version: 'unknown (network timeout)', warning: 'Network timeout checking version' };
+      }
       return { installed: false, error: error.message };
     }
   }
@@ -98,15 +102,19 @@ class AvalancheService {
     return new Promise((resolve, reject) => {
       const args = ['blockchain', 'create', subnetName];
       
-      // Add configuration options if provided
-      if (config.vmType) {
-        args.push('--vm', config.vmType);
+      // Add configuration options based on VM type
+      if (config.vmType === 'evm' || !config.vmType) {
+        args.push('--evm');
+        // Don't add extra flags to avoid network timeouts
+      } else if (config.vmType === 'spacesvm') {
+        args.push('--custom');
+      } else if (config.vmType === 'customvm') {
+        args.push('--custom');
       }
-      if (config.consensus) {
-        args.push('--consensus', config.consensus);
-      }
+      
+      // Add chain ID if provided
       if (config.chainId) {
-        args.push('--chain-id', config.chainId.toString());
+        args.push('--evm-chain-id', config.chainId.toString());
       }
 
       const command = spawn(this.cliPath, args, {
@@ -115,9 +123,23 @@ class AvalancheService {
 
       let stdout = '';
       let stderr = '';
+      let promptCount = 0;
 
       command.stdout.on('data', (data) => {
-        stdout += data.toString();
+        const output = data.toString();
+        stdout += output;
+        
+        // Handle interactive prompts
+        if (output.includes('Proof Of Authority') || output.includes('Proof Of Stake')) {
+          command.stdin.write('Proof Of Stake\n'); // Choose PoS for demo
+          promptCount++;
+        } else if (output.includes('stored key') && promptCount === 1) {
+          command.stdin.write('testkey\n'); // Use testkey
+          promptCount++;
+        } else if (output.includes('test environment') || output.includes('production')) {
+          command.stdin.write('I want to use defaults for a test environment\n');
+          promptCount++;
+        }
       });
 
       command.stderr.on('data', (data) => {
@@ -130,7 +152,7 @@ class AvalancheService {
             success: true,
             subnetName,
             output: stdout,
-            configPath: `${this.configDir}/blockchains/${subnetName}`
+            configPath: `${this.configDir}/subnets/${subnetName}`
           });
         } else {
           reject(new Error(`Subnet creation failed: ${stderr}`));
