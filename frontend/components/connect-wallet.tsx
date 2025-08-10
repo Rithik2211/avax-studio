@@ -61,7 +61,7 @@ export function ConnectWallet() {
   return (
     <button
       onClick={handleConnect}
-      className="glass-button flex items-center gap-2 animate-pulse-glow border border-1 py-2"
+      className="glass-button flex items-center gap-2 border border-2 py-2"
     >
       <Wallet className="w-4 h-4" />
       Connect Wallet
