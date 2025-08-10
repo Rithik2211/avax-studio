@@ -12,9 +12,9 @@ async function testFrontendDeployment() {
     config: {
       name: 'MySubnet',
       description: 'Subnet created via Avax Studio',
-      vmType: 'evm',
+      vmType: 'evm', // lowercase as the frontend now sends
       network: 'fuji',
-      keyName: 'ewoq',
+      keyName: 'ewoq', // Using the key we have
       initialSupply: '1000000000',
       gasPrice: '25000000000',
       governanceEnabled: false,

@@ -3,15 +3,30 @@ import { SubnetConfig } from './subnetSlice';
 
 export interface Template {
   id: string;
+  user_id: string;
   name: string;
   description: string;
-  config: SubnetConfig;
-  author: string;
-  isPublic: boolean;
-  createdAt: string;
-  updatedAt: string;
-  downloads: number;
+  category: string;
+  visibility: string;
+  template_config: {
+    vm_type: string;
+    gas_price: number;
+    governance: {
+      threshold: number;
+      votingPeriod: number;
+    };
+    initial_supply: number;
+  };
+  vm_type: string;
+  usage_count: number;
   rating: number;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+  user_profiles?: {
+    id: string;
+    full_name: string;
+  };
 }
 
 export interface TemplateState {
@@ -41,7 +56,8 @@ export const fetchTemplates = createAsyncThunk(
         throw new Error(error.message || 'Failed to fetch templates');
       }
 
-      return await response.json();
+      const result = await response.json();
+      return result.templates; // Backend returns { success: true, templates: [...] }
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -83,7 +99,8 @@ export const saveTemplate = createAsyncThunk(
         throw new Error(error.message || 'Failed to save template');
       }
 
-      return await response.json();
+      const result = await response.json();
+      return result.template; // Backend returns { success: true, template: {...} }
     } catch (error: any) {
       return rejectWithValue(error.message);
     }
@@ -101,7 +118,8 @@ export const loadTemplate = createAsyncThunk(
         throw new Error(error.message || 'Failed to load template');
       }
 
-      return await response.json();
+      const result = await response.json();
+      return result.template; // Backend returns { success: true, template: {...} }
     } catch (error: any) {
       return rejectWithValue(error.message);
     }

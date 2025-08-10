@@ -36,12 +36,14 @@ const deployRoutes = require('./routes/deploy');
 const monitorRoutes = require('./routes/monitor');
 const templateRoutes = require('./routes/templates');
 const healthRoutes = require('./routes/health');
+const userRoutes = require('./routes/users');
 
 // Routes
 app.use('/deploy', deployRoutes);
 app.use('/monitor', monitorRoutes);
 app.use('/templates', templateRoutes);
 app.use('/health', healthRoutes);
+app.use('/users', userRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

@@ -21,6 +21,29 @@ services:
       --staking-tls-key-file=/root/.avalanchego/staking.key
       --log-level=info
     restart: unless-stopped
+    networks:
+      - avalanche-network
+
+  avalanche-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile.avalanche
+    container_name: avalanche-cli
+    volumes:
+      - ./scripts:/avalanche/scripts
+      - avalanche-keys:/root/.avalanche
+    environment:
+      - AVALANCHE_NETWORK=fuji
+      - AVALANCHE_PRIVATE_KEY=${AVALANCHE_PRIVATE_KEY:-""}
+    depends_on:
+      - avalanche-node
+    networks:
+      - avalanche-network
 
 volumes:
   avalanche-data:
+  avalanche-keys:
+
+networks:
+  avalanche-network:
+    driver: bridge

@@ -1,0 +1,33 @@
+FROM ubuntu:22.04
+
+# Install dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Go
+RUN wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz && \
+    rm go1.21.0.linux-amd64.tar.gz
+
+ENV PATH=$PATH:/usr/local/go/bin
+
+# Install Avalanche CLI
+RUN go install github.com/ava-labs/avalanche-cli@latest
+
+# Create working directory
+WORKDIR /avalanche
+
+# Copy deployment scripts
+COPY scripts/ ./scripts/
+RUN chmod +x ./scripts/*.sh
+
+# Set environment variables
+ENV AVALANCHE_NETWORK=fuji
+ENV AVALANCHE_KEY_NAME=ewoq
+
+# Default command
+CMD ["/bin/bash"]

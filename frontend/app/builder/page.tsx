@@ -124,8 +124,11 @@ function BuilderFlow() {
     config, 
     isDeploying, 
     deploymentStatus,
-    deploymentResult 
+    deploymentResult,
+    error
   } = useSelector((state: RootState) => state.subnet)
+  
+  const { selectedTemplate } = useSelector((state: RootState) => state.templates)
   
   const [nodes, setNodesState, onNodesChange] = useNodesState(reduxNodes)
   const [edges, setEdgesState, onEdgesChange] = useEdgesState(reduxEdges)
@@ -147,6 +150,74 @@ function BuilderFlow() {
       }
     }
   }, [nodes, selectedNode, dispatch])
+
+  // Load template data when selectedTemplate changes
+  useEffect(() => {
+    if (selectedTemplate && selectedTemplate.template_config) {
+      const config = selectedTemplate.template_config
+      
+      // Create nodes from template data
+      const templateNodes: Node[] = []
+      
+      // VM Node
+      if (config.vm_type) {
+        templateNodes.push({
+          id: `vm-${Date.now()}`,
+          type: 'vmNode',
+          position: { x: 100, y: 100 },
+          data: { vmType: config.vm_type.toUpperCase() }
+        })
+      }
+      
+      // Tokenomics Node
+      if (config.initial_supply || config.gas_price) {
+        templateNodes.push({
+          id: `tokenomics-${Date.now()}`,
+          type: 'tokenomicsNode',
+          position: { x: 300, y: 100 },
+          data: { 
+            supply: config.initial_supply?.toString() || '1000000000',
+            gasPrice: config.gas_price?.toString() || '25000000000'
+          }
+        })
+      }
+      
+      // Governance Node
+      if (config.governance) {
+        templateNodes.push({
+          id: `governance-${Date.now()}`,
+          type: 'governanceNode',
+          position: { x: 500, y: 100 },
+          data: { 
+            threshold: config.governance.threshold || 51,
+            votingPeriod: config.governance.votingPeriod || 168
+          }
+        })
+      }
+      
+      // Validators Node (default)
+      templateNodes.push({
+        id: `validators-${Date.now()}`,
+        type: 'validatorsNode',
+        position: { x: 100, y: 300 },
+        data: { count: 3 }
+      })
+      
+      // Set the nodes
+      setNodesState(templateNodes)
+      dispatch(setNodes(templateNodes))
+      
+      // Update config
+      dispatch(updateConfig({
+        name: selectedTemplate.name,
+        vmType: config.vm_type,
+        network: 'fuji',
+        keyName: 'ewoq'
+      }))
+      
+      toast.success(`Template "${selectedTemplate.name}" loaded successfully!`)
+    }
+  }, [selectedTemplate, dispatch, setNodesState])
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -343,7 +414,7 @@ function BuilderFlow() {
           {deploymentStatus !== 'idle' && (
             <div className="border-t border-white/20 pt-4">
               <h3 className="text-lg font-semibold mb-4">Status</h3>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-3">
                 {deploymentStatus === 'success' ? (
                   <CheckCircle className="w-4 h-4 text-green-400" />
                 ) : deploymentStatus === 'error' ? (
@@ -353,6 +424,47 @@ function BuilderFlow() {
                 )}
                 <span className="text-sm capitalize">{deploymentStatus}</span>
               </div>
+              
+              {/* Deployment Progress */}
+              {isDeploying && deploymentResult?.deploymentId && (
+                <div className="space-y-2">
+                  <div className="text-xs text-gray-400">Deployment ID: {deploymentResult.deploymentId}</div>
+                  <div className="text-xs text-blue-400">
+                    {deploymentStatus === 'deploying' ? 'Using Docker deployment...' : 'Local CLI deployment...'}
+                  </div>
+                </div>
+              )}
+              
+              {/* Success Details */}
+              {deploymentStatus === 'success' && deploymentResult && (
+                <div className="space-y-2 text-xs">
+                  <div className="text-green-400">
+                    ✅ Subnet deployed successfully!
+                  </div>
+                  {deploymentResult.subnetId && (
+                    <div className="text-gray-300">
+                      Subnet ID: {deploymentResult.subnetId}
+                    </div>
+                  )}
+                  {deploymentResult.blockchainId && (
+                    <div className="text-gray-300">
+                      Blockchain ID: {deploymentResult.blockchainId}
+                    </div>
+                  )}
+                  {deploymentResult.rpcUrl && (
+                    <div className="text-gray-300">
+                      RPC URL: {deploymentResult.rpcUrl}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Error Details */}
+              {deploymentStatus === 'error' && (
+                <div className="text-xs text-red-400">
+                  {error || 'Deployment failed. Check logs for details.'}
+                </div>
+              )}
             </div>
           )}
 

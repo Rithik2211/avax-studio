@@ -35,7 +35,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-        <h2 className="text-white text-center text-2xl md:text-4xl lg:text-6xl font-sans pt-0 md:pt-4 pb-6 md:pb-8 relative z-20 font-medium tracking-tight -mt-2">
+        <h2 className="text-white text-center text-2xl md:text-4xl lg:text-8xl font-sans pt-0 md:pt-4 pb-6 md:pb-8 relative z-20 font-medium tracking-tight -mt-2">
           Launch <span className="text-red-500">Avalanche</span> Subnets, <br /> In <span className="relative inline-block">
             <span className="relative z-10">Minutes</span>
             <svg className="absolute -bottom-3 left-0 w-[115%] h-6 pointer-events-none z-0" viewBox="0 0 300 60" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -53,7 +53,7 @@ export default function HomePage() {
             </svg>
           </span>.
         </h2>
-        <p className="max-w-md mx-auto text-sm md:text-md text-neutral-700 dark:text-neutral-400 font-bold text-center">
+        <p className="max-w-xl mx-auto text-sm md:text-lg text-neutral-700 dark:text-neutral-400 font-bold text-center">
         No CLI. No hassle. Just build, deploy and manage with a click.
         </p>
         <div className="relative z-20 mt-8">

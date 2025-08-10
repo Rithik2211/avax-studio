@@ -53,6 +53,29 @@ export const connectWallet = createAsyncThunk(
       const network = await ethersProvider.getNetwork();
       const balance = await ethersProvider.getBalance(account);
 
+      // Create or get user profile in database
+      try {
+        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            walletAddress: account,
+            email: `${account.slice(0, 8)}@demo.avaxstudio.com`, // Demo email
+            fullName: `User ${account.slice(0, 6)}...${account.slice(-4)}`
+          }),
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          console.log('User profile created/retrieved:', userData);
+        }
+      } catch (dbError) {
+        console.warn('Failed to create user profile:', dbError);
+        // Continue without user profile for demo
+      }
+
       return {
         address: account,
         provider: ethersProvider,

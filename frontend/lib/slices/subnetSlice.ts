@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Node, Edge } from 'reactflow';
+import { RootState } from '@/lib/store';
 
 export interface SubnetConfig {
   id: string;
@@ -61,10 +62,26 @@ const initialState: SubnetState = {
 
 export const deploySubnet = createAsyncThunk(
   'subnet/deploy',
-  async (config: SubnetConfig, { rejectWithValue }) => {
+  async (config: SubnetConfig, { rejectWithValue, getState }) => {
     try {
-      // Generate a proper UUID for demo purposes
-      const userId = crypto.randomUUID();
+      // Get user ID from wallet state or generate one
+      const state = getState() as RootState;
+      const walletAddress = state.wallet.address;
+      
+      let userId = 'demo-user-' + Date.now(); // Fallback
+      
+      if (walletAddress) {
+        try {
+          // Try to get user profile by wallet address
+          const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile/${walletAddress}`);
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            userId = userData.user.id;
+          }
+        } catch (error) {
+          console.warn('Failed to get user ID, using fallback:', error);
+        }
+      }
       
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/deploy`, {
         method: 'POST',
@@ -75,7 +92,7 @@ export const deploySubnet = createAsyncThunk(
           config: {
             name: config.name,
             description: `Subnet created via Avax Studio`,
-            vmType: config.vmType.toLowerCase(),
+            vmType: config.vmType.toLowerCase(), // Convert to lowercase
             network: config.network,
             keyName: 'ewoq', // Use the key we have available
             initialSupply: config.tokenomics.supply,

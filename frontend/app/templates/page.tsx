@@ -7,7 +7,8 @@ import {
   fetchTemplates, 
   fetchUserTemplates, 
   loadTemplate,
-  saveTemplate 
+  saveTemplate,
+  Template
 } from '@/lib/slices/templateSlice'
 import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
@@ -42,8 +43,15 @@ export default function TemplatesPage() {
   const [filterVM, setFilterVM] = useState('all')
   const [showUserTemplates, setShowUserTemplates] = useState(false)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+  const [templateForm, setTemplateForm] = useState({
+    name: '',
+    description: '',
+    visibility: 'private' as 'private' | 'public'
+  })
 
   useEffect(() => {
+    setIsClient(true)
     dispatch(fetchTemplates() as any)
     // For demo, skip user templates since wallet addresses aren't UUIDs
     // if (address) {
@@ -64,19 +72,113 @@ export default function TemplatesPage() {
 
   const handleSaveTemplate = async (templateData: any) => {
     try {
-      await dispatch(saveTemplate(templateData) as any)
+      // Add userId and fix the data structure for backend
+      const templateToSave = {
+        ...templateData,
+        userId: address || 'demo-user-' + Date.now(), // Use wallet address or generate demo user ID
+        config: templateData.template_config, // Backend expects 'config' not 'template_config'
+        vmType: templateData.vm_type // Backend expects 'vmType' not 'vm_type'
+      }
+      
+      await dispatch(saveTemplate(templateToSave) as any)
       toast.success('Template saved successfully!')
       setShowCreateModal(false)
+      
+      // Refresh templates list
+      dispatch(fetchTemplates() as any)
     } catch (error: any) {
       toast.error(error.message || 'Failed to save template')
     }
   }
 
-  const filteredTemplates = (showUserTemplates ? (userTemplates || []) : (templates || []))?.filter(template => {
-    const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         template.description.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesVM = filterVM === 'all' || template.config.vmType === filterVM
-    return matchesSearch && matchesVM
+  // Ensure templates and userTemplates are arrays with error handling
+  const templatesArray = Array.isArray(templates) ? templates : []
+  const userTemplatesArray = Array.isArray(userTemplates) ? userTemplates : []
+  
+  // Add dummy data for demo purposes
+  const dummyTemplates: Template[] = [
+    {
+      id: 'demo-1',
+      user_id: 'demo-user',
+      name: 'DeFi Starter Template',
+      description: 'Pre-configured subnet template for DeFi applications with optimized gas settings',
+      category: 'defi',
+      visibility: 'public',
+      template_config: {
+        vm_type: 'evm',
+        gas_price: 225000000000,
+        governance: { threshold: 51, votingPeriod: 168 },
+        initial_supply: 1000000000
+      },
+      vm_type: 'evm',
+      usage_count: 15,
+      rating: 4.5,
+      tags: ['defi', 'evm', 'starter'],
+      created_at: '2025-01-15T10:30:00.000Z',
+      updated_at: '2025-01-15T10:30:00.000Z',
+      user_profiles: { id: 'demo-user', full_name: 'Subnet Admin' }
+    },
+    {
+      id: 'demo-2',
+      user_id: 'demo-user',
+      name: 'Gaming Subnet Template',
+      description: 'High-performance subnet optimized for gaming applications with low latency',
+      category: 'gaming',
+      visibility: 'public',
+      template_config: {
+        vm_type: 'evm',
+        gas_price: 150000000000,
+        governance: { threshold: 67, votingPeriod: 72 },
+        initial_supply: 500000000
+      },
+      vm_type: 'evm',
+      usage_count: 8,
+      rating: 4.2,
+      tags: ['gaming', 'evm', 'performance'],
+      created_at: '2025-01-10T14:20:00.000Z',
+      updated_at: '2025-01-10T14:20:00.000Z',
+      user_profiles: { id: 'demo-user', full_name: 'Game Dev' }
+    },
+    {
+      id: 'demo-3',
+      user_id: 'demo-user',
+      name: 'NFT Marketplace Template',
+      description: 'Specialized subnet for NFT marketplaces with enhanced storage capabilities',
+      category: 'nft',
+      visibility: 'public',
+      template_config: {
+        vm_type: 'evm',
+        gas_price: 300000000000,
+        governance: { threshold: 51, votingPeriod: 168 },
+        initial_supply: 2000000000
+      },
+      vm_type: 'evm',
+      usage_count: 12,
+      rating: 4.7,
+      tags: ['nft', 'evm', 'marketplace'],
+      created_at: '2025-01-05T09:15:00.000Z',
+      updated_at: '2025-01-05T09:15:00.000Z',
+      user_profiles: { id: 'demo-user', full_name: 'NFT Creator' }
+    }
+  ]
+
+  // Use dummy data if no real templates are available
+  const availableTemplates = showUserTemplates 
+    ? (userTemplatesArray.length > 0 ? userTemplatesArray : dummyTemplates)
+    : (templatesArray.length > 0 ? templatesArray : dummyTemplates)
+
+  const filteredTemplates = availableTemplates.filter(template => {
+    try {
+      const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           template.description.toLowerCase().includes(searchQuery.toLowerCase())
+      // Use vm_type from template_config or root level
+      const templateVMType = template.template_config?.vm_type || template.vm_type
+      const matchesVM = filterVM === 'all' || templateVMType === filterVM
+      return matchesSearch && matchesVM
+    } catch (error) {
+      console.error('Error filtering template:', error, template)
+      return false
+    }
   })
 
   return (
@@ -163,7 +265,7 @@ export default function TemplatesPage() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-xl font-semibold mb-1">{template.name}</h3>
-                    <p className="text-sm text-gray-400">{template.config.vmType} VM</p>
+                    <p className="text-sm text-gray-400">{template.vm_type?.toUpperCase()} VM</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
@@ -179,12 +281,16 @@ export default function TemplatesPage() {
                   <div className="flex items-center gap-4">
                     <span className="flex items-center gap-1">
                       <Download className="w-3 h-3" />
-                      {template.downloads}
+                      {template.usage_count}
                     </span>
-                    <span>By {template.author.slice(0, 6)}...{template.author.slice(-4)}</span>
+                    <span>By {template.user_profiles?.full_name || 'Unknown'}</span>
                   </div>
                   <span className="text-xs">
-                    {new Date(template.createdAt).toLocaleDateString()}
+                    {isClient ? new Date(template.created_at).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    }) : '01/15/2025'}
                   </span>
                 </div>
                 
@@ -227,7 +333,11 @@ export default function TemplatesPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Template Name</label>
-                <Input placeholder="Enter template name" />
+                <Input 
+                  placeholder="Enter template name" 
+                  value={templateForm.name}
+                  onChange={(e) => setTemplateForm({...templateForm, name: e.target.value})}
+                />
               </div>
               
               <div>
@@ -235,18 +345,31 @@ export default function TemplatesPage() {
                 <textarea 
                   placeholder="Describe your template..."
                   className="w-full glass px-3 py-2 rounded-lg border border-white/20 resize-none h-20"
+                  value={templateForm.description}
+                  onChange={(e) => setTemplateForm({...templateForm, description: e.target.value})}
                 />
               </div>
               
               <div className="flex items-center gap-2">
-                <input type="checkbox" id="public" />
+                <input 
+                  type="checkbox" 
+                  id="public" 
+                  checked={templateForm.visibility === 'public'}
+                  onChange={(e) => setTemplateForm({
+                    ...templateForm, 
+                    visibility: e.target.checked ? 'public' : 'private'
+                  })}
+                />
                 <label htmlFor="public" className="text-sm">Make template public</label>
               </div>
             </div>
             
             <div className="flex gap-2 mt-6">
               <Button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => {
+                  setShowCreateModal(false)
+                  setTemplateForm({ name: '', description: '', visibility: 'private' })
+                }}
                 variant="outline"
                 className="flex-1"
               >
@@ -254,11 +377,18 @@ export default function TemplatesPage() {
               </Button>
               <Button
                 onClick={() => handleSaveTemplate({
-                  name: 'New Template',
-                  description: 'Template description',
-                  config: { vmType: 'EVM' },
-                  author: address || '',
-                  isPublic: false
+                  name: templateForm.name || 'New Template',
+                  description: templateForm.description || 'Template description',
+                  template_config: { 
+                    vm_type: 'evm',
+                    gas_price: 225000000000,
+                    governance: { threshold: 51, votingPeriod: 168 },
+                    initial_supply: 1000000000
+                  },
+                  vm_type: 'evm',
+                  category: 'general',
+                  visibility: templateForm.visibility || 'private',
+                  tags: ['new', 'template']
                 })}
                 className="flex-1"
               >
