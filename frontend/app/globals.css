@@ -85,20 +85,251 @@
     @apply bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent;
   }
   
-  .gradient-border {
+  /* Professional Gradient Border Utilities */
+  .gradient-border-blue {
     @apply relative;
   }
   
-  .gradient-border::before {
+  .gradient-border-blue::before {
     content: '';
-    @apply absolute inset-0 rounded-xl bg-gradient-to-r from-blue-400 to-blue-600 p-[1px] -z-10;
+    @apply absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 p-[1px] -z-10;
   }
   
-  .gradient-border::after {
+  .gradient-border-blue::after {
     content: '';
-    @apply absolute inset-[1px] rounded-xl bg-background;
+    @apply absolute inset-[1px] rounded-2xl bg-black/40 backdrop-blur-xl;
   }
   
+  .gradient-border-green {
+    @apply relative;
+  }
+  
+  .gradient-border-green::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 p-[1px] -z-10;
+  }
+  
+  .gradient-border-green::after {
+    content: '';
+    @apply absolute inset-[1px] rounded-2xl bg-black/40 backdrop-blur-xl;
+  }
+  
+  .gradient-border-purple {
+    @apply relative;
+  }
+  
+  .gradient-border-purple::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 p-[1px] -z-10;
+  }
+  
+  .gradient-border-purple::after {
+    content: '';
+    @apply absolute inset-[1px] rounded-2xl bg-black/40 backdrop-blur-xl;
+  }
+  
+  .gradient-border-orange {
+    @apply relative;
+  }
+  
+  .gradient-border-orange::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 p-[1px] -z-10;
+  }
+  
+  .gradient-border-orange::after {
+    content: '';
+    @apply absolute inset-[1px] rounded-2xl bg-black/40 backdrop-blur-xl;
+  }
+  
+  .gradient-border-gray {
+    @apply relative;
+  }
+  
+  .gradient-border-gray::before {
+    content: '';
+    @apply absolute inset-0 rounded-3xl bg-gradient-to-r from-gray-500/30 to-gray-600/30 p-[1px] -z-10;
+  }
+  
+  .gradient-border-gray::after {
+    content: '';
+    @apply absolute inset-[1px] rounded-3xl bg-black/40 backdrop-blur-xl;
+  }
+  
+  /* Enhanced Hover Effects */
+  .hover-glow-blue {
+    @apply transition-all duration-300 hover:shadow-[0_0_30px_rgba(59,130,246,0.3)] hover:shadow-blue-500/20;
+  }
+  
+  .hover-glow-green {
+    @apply transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,197,94,0.3)] hover:shadow-green-500/20;
+  }
+  
+  .hover-glow-purple {
+    @apply transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.3)] hover:shadow-purple-500/20;
+  }
+  
+  .hover-glow-orange {
+    @apply transition-all duration-300 hover:shadow-[0_0_30px_rgba(249,115,22,0.3)] hover:shadow-orange-500/20;
+  }
+  
+  /* Professional Card Styles */
+  .pro-card {
+    @apply bg-black/40 backdrop-blur-xl border border-gray-500/20 rounded-2xl p-6 transition-all duration-300;
+  }
+  
+  .pro-card-blue {
+    @apply pro-card border-blue-500/20 hover:border-blue-500/40 hover-glow-blue;
+  }
+  
+  .pro-card-green {
+    @apply pro-card border-green-500/20 hover:border-green-500/40 hover-glow-green;
+  }
+  
+  .pro-card-purple {
+    @apply pro-card border-purple-500/20 hover:border-purple-500/40 hover-glow-purple;
+  }
+  
+  .pro-card-orange {
+    @apply pro-card border-orange-500/20 hover:border-orange-500/40 hover-glow-orange;
+  }
+  
+  /* Animated Background Gradients */
+  .animated-bg {
+    @apply relative overflow-hidden;
+  }
+  
+  .animated-bg::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-red-500/5 animate-pulse;
+  }
+  
+  /* Progress Bar Animation */
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-1000 ease-out;
+  }
+  
+  .progress-fill-blue {
+    @apply progress-fill bg-gradient-to-r from-blue-500 to-cyan-500;
+  }
+  
+  .progress-fill-green {
+    @apply progress-fill bg-gradient-to-r from-green-500 to-emerald-500;
+  }
+  
+  .progress-fill-purple {
+    @apply progress-fill bg-gradient-to-r from-purple-500 to-pink-500;
+  }
+  
+  .progress-fill-orange {
+    @apply progress-fill bg-gradient-to-r from-orange-500 to-red-500;
+  }
+  
+  /* Enhanced Professional Dashboard Styles */
+  .dashboard-card {
+    @apply relative bg-black/60 backdrop-blur-xl rounded-3xl border transition-all duration-500;
+  }
+  
+  .dashboard-card-blue {
+    @apply dashboard-card border-blue-500/20 hover:border-blue-500/40 hover:shadow-2xl hover:shadow-blue-500/20;
+  }
+  
+  .dashboard-card-green {
+    @apply dashboard-card border-green-500/20 hover:border-green-500/40 hover:shadow-2xl hover:shadow-green-500/20;
+  }
+  
+  .dashboard-card-purple {
+    @apply dashboard-card border-purple-500/20 hover:border-purple-500/40 hover:shadow-2xl hover:shadow-purple-500/20;
+  }
+  
+  .dashboard-card-orange {
+    @apply dashboard-card border-orange-500/20 hover:border-orange-500/40 hover:shadow-2xl hover:shadow-orange-500/20;
+  }
+  
+  .dashboard-card-gray {
+    @apply dashboard-card border-gray-500/20 hover:border-gray-500/40 hover:shadow-2xl hover:shadow-gray-500/20;
+  }
+  
+  /* Gradient Hover Glow Effects */
+  .gradient-glow-blue {
+    @apply transition-all duration-500;
+  }
+  
+  .gradient-glow-blue:hover {
+    @apply shadow-[0_0_40px_rgba(59,130,246,0.4)] shadow-blue-500/30;
+  }
+  
+  .gradient-glow-green {
+    @apply transition-all duration-500;
+  }
+  
+  .gradient-glow-green:hover {
+    @apply shadow-[0_0_40px_rgba(34,197,94,0.4)] shadow-green-500/30;
+  }
+  
+  .gradient-glow-purple {
+    @apply transition-all duration-500;
+  }
+  
+  .gradient-glow-purple:hover {
+    @apply shadow-[0_0_40px_rgba(168,85,247,0.4)] shadow-purple-500/30;
+  }
+  
+  .gradient-glow-orange {
+    @apply transition-all duration-500;
+  }
+  
+  .gradient-glow-orange:hover {
+    @apply shadow-[0_0_40px_rgba(249,115,22,0.4)] shadow-orange-500/30;
+  }
+  
+  /* Enhanced Icon Animations */
+  .icon-glow {
+    @apply transition-all duration-500;
+  }
+  
+  .icon-glow:hover {
+    @apply shadow-lg filter drop-shadow-lg;
+  }
+  
+  .icon-glow-blue:hover {
+    @apply shadow-blue-500/50;
+  }
+  
+  .icon-glow-green:hover {
+    @apply shadow-green-500/50;
+  }
+  
+  .icon-glow-purple:hover {
+    @apply shadow-purple-500/50;
+  }
+  
+  .icon-glow-orange:hover {
+    @apply shadow-orange-500/50;
+  }
+  
+  /* Professional Button Styles */
+  .pro-button {
+    @apply font-semibold py-4 px-6 rounded-2xl transition-all duration-300 text-lg shadow-lg;
+  }
+  
+  .pro-button-blue {
+    @apply pro-button bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white hover:shadow-blue-500/25;
+  }
+  
+  .pro-button-green {
+    @apply pro-button bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white hover:shadow-green-500/25;
+  }
+  
+  .pro-button-purple {
+    @apply pro-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white hover:shadow-purple-500/25;
+  }
+  
+  .pro-button-orange {
+    @apply pro-button bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white hover:shadow-orange-500/25;
+  }
+  
+  /* Floating Animation */
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
@@ -136,5 +367,44 @@
         0 0 75px rgba(124, 58, 237, 0.6),
         inset 0 0 30px rgba(239, 68, 68, 0.2);
     }
+  }
+  
+  /* Enhanced Background Gradients */
+  .bg-gradient-professional {
+    @apply bg-gradient-to-br from-slate-950 via-black to-slate-900;
+  }
+  
+  .bg-gradient-card {
+    @apply bg-gradient-to-br from-black/60 via-black/40 to-black/60;
+  }
+  
+  /* Smooth Transitions */
+  .smooth-transition {
+    @apply transition-all duration-500 ease-out;
+  }
+  
+  .smooth-transition-fast {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  /* Professional Text Gradients */
+  .text-gradient-white {
+    @apply bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-blue {
+    @apply bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-green {
+    @apply bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-purple {
+    @apply bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-orange {
+    @apply bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent;
   }
 }
