@@ -190,7 +190,7 @@ export default function TemplatesPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2 text-red-500">Template Library</h1>
+            <h1 className="text-4xl font-bold mb-2 text-white">Template Library</h1>
             <p className="text-gray-300">
               Browse and use pre-configured subnet templates from the community
             </p>
